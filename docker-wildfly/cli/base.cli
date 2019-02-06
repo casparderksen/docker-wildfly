@@ -1,0 +1,63 @@
+# Embed offline server and start batch
+
+embed-server
+batch
+
+# Configure paths
+
+/path=secrets.dir:add(path=secrets, relative-to=jboss.server.config.dir)
+/path=certificates.dir:add(path=/opt/security)
+
+# Create credential stores with dummy passwords
+
+/subsystem=elytron/credential-store=MasterCS:add(location="master.jceks", relative-to=secrets.dir, credential-reference={clear-text="{EXT}cat /run/secrets/master-password", type="COMMAND"}, create=true)
+/subsystem=elytron/credential-store=MasterCS:add-alias(alias=wildfly-cs-password, secret-value="changeit")
+
+/subsystem=elytron/credential-store=WildflyCS:add(location="wildfly.jceks", relative-to=secrets.dir, credential-reference={store=MasterCS, alias=wildfly-cs-password}, create=true)
+/subsystem=elytron/credential-store=WildflyCS:add-alias(alias=keystore-password, secret-value="changeit")
+/subsystem=elytron/credential-store=WildflyCS:add-alias(alias=key-password, secret-value="changeit")
+
+# Configure keystore, key manager and SSL context
+
+/subsystem=elytron/key-store=httpsKS:add(type=JKS, path=keystore.jks, relative-to=certificates.dir, credential-reference={store=WildflyCS, alias=keystore-password})
+/subsystem=elytron/key-manager=httpsKM:add(key-store=httpsKS, algorithm="SunX509", alias-filter=localhost, credential-reference={store=WildflyCS, alias=key-password})
+/subsystem=elytron/server-ssl-context=httpsSSC:add(key-manager=httpsKM, protocols=["TLSv1.2"])
+
+# Enable HTTPS, and remove legacy security realm and welcome content
+
+/subsystem=undertow/server=default-server/https-listener=https:undefine-attribute(name=security-realm)
+/subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=ssl-context, value=httpsSSC)
+/subsystem=undertow/server=default-server/http-listener=default:remove
+/subsystem=undertow/server=default-server/host=default-host/location=\/:remove
+/subsystem=undertow/configuration=handler/file=welcome-content:remove
+
+# Enable HTTPS and authentication for management interface and remove legacy security realm
+
+/core-service=management/management-interface=http-interface:write-attribute(name=secure-socket-binding, value=management-https)
+/core-service=management/management-interface=http-interface:write-attribute(name=ssl-context, value=httpsSSC)
+/core-service=management/management-interface=http-interface:undefine-attribute(name=socket-binding)
+#/core-service=management/management-interface=http-interface:write-attribute(name=console-enabled, value=false)
+
+# Secure EJBs with Elytron
+
+/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
+/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
+/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
+
+# Disable JMX remoting, repeated deployment scanning and example datasource
+
+/subsystem=jmx/remoting-connector=jmx:remove
+/subsystem=deployment-scanner/scanner=default:write-attribute(name=scan-interval, value=-1)
+/subsystem=datasources/data-source=ExampleDS:remove
+#/subsystem=datasources/jdbc-driver=h2:remove
+
+# Enable statistics
+
+/subsystem=transactions:write-attribute(name=statistics-enabled, value=true)
+/subsystem=undertow:write-attribute(name=statistics-enabled, value=true)
+/subsystem=webservices:write-attribute(name=statistics-enabled, value=true)
+
+# Run batch and stop embedded server
+
+run-batch
+stop-embedded-server
