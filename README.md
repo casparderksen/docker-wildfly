@@ -134,3 +134,5 @@ Wildfly:
 - [WildFly quickstarts](https://github.com/wildfly/quickstart)
 - [JBoss EAP documentation](https://access.redhat.com/documentation/en-us/red_hat_jboss_enterprise_application_platform/7.1/)
 
+Oracle RDBMS in Docker:
+- [docker-oracle](https://github.com/casparderksen/docker-oracle)
