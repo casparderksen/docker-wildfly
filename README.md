@@ -3,11 +3,16 @@
 This projects packages and configures Wildfly 15 in a Docker image.  The goal
 of this project is to run JEE8/MicroProfile based microservices in containers
 that are secure by default and respect [Twelve-Factor App](http://12factor.net) principles.
-When the container starts, it must be fully configured without baking secrets
+When the container starts, it must be fully configured without baking secrets 
 into the image.
 
 Wildfly is configured in standalone mode, since clustering should be managed from
 the container orchestrator and not some JEE domain.
+
+For fast startup, Wildfly is configured at build time, with references to dummy
+credentials and a self signed certificate. At run time, credential stores are regenerated
+with actual secrets from the environment. The self-signed certificate can be replaced with 
+a bind mount.
 
 # Building the images
 
@@ -20,7 +25,15 @@ The Wildfly image is built as follows:
 - Creation of credential stores with dummy passwords
 - Offline configuration of Wildfly via CLI
 
+Run the following command to build the Wildfy image:
+
+    $ make
+    
 # Running a container
+
+Type the following command to run a Wildfly container:
+
+    $ make run
 
 ## Environment variables
 
@@ -35,10 +48,16 @@ Containers launched from the Wildfly image can be configured with the following 
 
 See [wildfly-wrapper.sh](docker-wildfly/bin/wildfly-wrapper.sh) for defaults.
 
-When running the container, environment variables of the form `WILDFLY_*_PASSWORD` are stored as alias 
-in a credential store. Other environment variables of the form `WILDFLY_*` are written
-to a properties files. In this way, properties and aliases for credentials can be 
-configured from the environment and referenced from the Wildfly configuration file.
+When running the container, all environment variables of the form `WILDFLY_*_PASSWORD` are stored 
+as aliases in a credential store. Other environment variables of the form `WILDFLY_*` are written
+to a properties files used for configuration. In this way, environment variables can be used for
+dynamically configuring the container at startup.
+
+When generating alias or property names from environment variables, the `WILDFLY_` prefix is stripped
+and the name is converted to lower case. For aliases, underscores are replaced with dashes,
+whereas for properties underscores are replaced with periods. For example:
+- `WILDFLY_DATASOURCE_ORACLE_USERNAME` results in property `datasource.oracle.username`
+- `WILDFLY_DATASOURCE_ORACLE_PASSWORD` results in alias `datasource-oracle-password`
 
 ## Ports
 
@@ -100,7 +119,7 @@ to [`docker-wildfly-oracle`](docker-wildfly-oracle). Then run:
 
     make wildfly-oracle.build
     
-Environment variables for configuring the container:
+Environment variables for configuring the datasource:
 
 - `WILDFLY_DATASOURCE_ORACLE_URL`: connection URL
 - `WILDFLY_DATASOURCE_ORACLE_USERNAME`: user name
