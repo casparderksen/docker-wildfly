@@ -46,14 +46,14 @@ Containers launched from the Wildfly image can be configured with the following 
 - `WILDFLY_KEYSTORE_PASSWORD`: keystore password for TLS
 - `WILDFLY_KEY_PASSWORD`: key password for TLS
 
-See [wildfly-wrapper.sh](docker-wildfly/scripts/wildfly-wrapper.sh) for defaults.
+See [environment.sh](docker-wildfly/bin/environment.sh) for defaults.
 
 When running the container, all environment variables of the form `WILDFLY_*_PASSWORD` are stored 
 as aliases in a credential store. Other environment variables of the form `WILDFLY_*` are written
-to a properties files used for configuration. In this way, environment variables can be used for
+to a properties files that is passed to Wildfly. In this way, environment variables can be used for
 dynamically configuring the container at startup.
 
-When generating alias or property names from environment variables, the `WILDFLY_` prefix is stripped
+When generating alias or property names from environment variables, the `WILDFLY_` prefix is stripped,
 and the name is converted to lower case. For aliases, underscores are replaced with dashes,
 whereas for properties underscores are replaced with periods. For example:
 - `WILDFLY_DATASOURCE_USERNAME` results in property `datasource.username`
@@ -111,10 +111,10 @@ an in-memory file system (e.g. Docker secret).
 
 # Extending the base image
 
-The base image can be extended by running shell of CLI scripts during build or startup. 
-Startup shell of CLI scripts can be added to `$JBOSS_HOME/startup`. Defaults for additional
-environment variables can be added to `$JBOSS_HOME/bin/environment.sh`.
-See [docker-wildlfy-oracle](docker-wildfly-oracle) for an example.
+The base image can be extended by running shell or CLI scripts during build or startup. 
+Shell or CLI scripts that are added to `$JBOSS_HOME/startup` are executed when the container starts
+before starting Wildfly. Default values for additional environment variables can be added 
+to `$JBOSS_HOME/bin/environment.sh`. See [docker-wildlfy-oracle](docker-wildfly-oracle) for an example.
 
 ## Oracle RDBMS
 
@@ -139,12 +139,12 @@ See [environment.sh](docker-wildfly-oracle/environment.sh) for defaults.
 ## Docker-compose example
 
 See [docker-compose](docker-compose) for an example setup of Wildfly with an Oracle database.
-1. First create an Oracle database image (see [docker-oracle](https://github.com/casparderksen/docker-oracle)
+1. First create an Oracle database image (see [docker-oracle](https://github.com/casparderksen/docker-oracle))
 2. Build the Wildfly Oracle image: `make wildfly-oracle.build`
 3. Go to the [docker-compose](docker-compose) directory
 4. Start the database: `docker-compose up -d oracledb`
 5. Wait for the database to start: `docker logs -f <container-id>`
-6. Start the Wildlfy imaage: `docker-compose up -d  wildfly-oracle`
+6. Start the Wildlfy image: `docker-compose up -d  wildfly-oracle`
 7. Go to the management console at [https://localhost:9993/](https://localhost:9993/), login with `admin:changeit`
    and test the datasource connection.
 
