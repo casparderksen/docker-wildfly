@@ -1,0 +1,27 @@
+version: "3.1"
+
+services:
+  oracledb:
+    build:
+      context: ./oracledb
+    expose:
+      - "1521"
+    ports:
+      - "1521:1521"
+      - "5500:5500"
+    volumes:
+      - "oradata:/opt/oracle/oradata"
+
+  wildfly-oracle:
+    image: caspard/wildfly-oracle
+    ports:
+      - "8443:8443"
+      - "9993:9993"
+    environment:
+      - WILDFLY_ADMIN_PASSWORD=changeit
+      - WILDFLY_ORACLE_DATASOURCE_URL=jdbc:oracle:thin:@//oracledb:1521/ORCLPDB1
+      - WILDFLY_ORACLE_DATASOURCE_USERNAME=myschema
+      - WILDFLY_ORACLE_DATASOURCE_PASSWORD=myschema
+
+volumes:
+  oradata:

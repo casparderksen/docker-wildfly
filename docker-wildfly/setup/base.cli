@@ -5,8 +5,8 @@ batch
 
 # Configure paths
 
-/path=secrets.dir:add(path=secrets, relative-to=jboss.server.config.dir)
-/path=certificates.dir:add(path=/opt/security)
+/path=secrets.dir:add(path=security, relative-to=jboss.server.config.dir)
+/path=certificates.dir:add(path=security, relative-to=jboss.server.config.dir)
 
 # Create credential stores with dummy passwords
 
@@ -45,11 +45,10 @@ batch
 /subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
 
 # Disable JMX remoting, repeated deployment scanning and example datasource
-
 /subsystem=jmx/remoting-connector=jmx:remove
 /subsystem=deployment-scanner/scanner=default:write-attribute(name=scan-interval, value=-1)
 /subsystem=datasources/data-source=ExampleDS:remove
-#/subsystem=datasources/jdbc-driver=h2:remove
+/subsystem=datasources/jdbc-driver=h2:remove
 
 # Enable statistics
 

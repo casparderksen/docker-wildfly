@@ -6,22 +6,27 @@ batch
 # Create driver
 
 /subsystem=datasources/jdbc-driver=oracle:add( \
-    driver-module-name=com.oracle.jdbc, driver-name=oracle, \
+    driver-module-name=com.oracle.jdbc, \
+    driver-name=oracle, \
+    driver-class-name=oracle.jdbc.driver.OracleDriver, \
     driver-xa-datasource-class-name=oracle.jdbc.xa.client.OracleXADataSource)
 
 # Create datasource
 
-/subsystem=datasources/data-source=OracleDS:add(jndi-name="java:jboss/datasources/OracleDS", \
-    connection-url="${datasource.oracle.url:jdbc:oracle:thin:@//oracledb:1521/ORCLPDB1}", driver-name=oracle, \
+/subsystem=datasources/data-source=OracleDS:add( \
+    jndi-name="${oracle.datasource.jndiname}", \
+    connection-url="${oracle.datasource.url}", \
+    driver-name=oracle, \
     min-pool-size=5, max-pool-size=10, \
     valid-connection-checker-class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleValidConnectionChecker", \
     stale-connection-checker-class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleStaleConnectionChecker", \
     exception-sorter-class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleExceptionSorter", \
-    user-name="${datasource.oracle.username:scott}", credential-reference={store=WildflyCS, alias=datasource-oracle-password})
+    user-name="${oracle.datasource.username}", \
+    credential-reference={store=WildflyCS, alias=oracle-datasource-password})
 
 # Enable statistics
-
 # TODO test
+
 #/subsystem=datasources/data-source=OracleDS:write-attribute(name=statistics-enabled, value=true)
 #/subsystem=datasources/data-source=OracleDS/statistics=pool:write-attribute(name=statistics-enabled, value=true)
 #/subsystem=datasources/data-source=OracleDS/statistics=jdbc:write-attribute(name=statistics-enabled, value=true)

@@ -46,7 +46,7 @@ Containers launched from the Wildfly image can be configured with the following 
 - `WILDFLY_KEYSTORE_PASSWORD`: keystore password for TLS
 - `WILDFLY_KEY_PASSWORD`: key password for TLS
 
-See [wildfly-wrapper.sh](docker-wildfly/bin/wildfly-wrapper.sh) for defaults.
+See [wildfly-wrapper.sh](docker-wildfly/scripts/wildfly-wrapper.sh) for defaults.
 
 When running the container, all environment variables of the form `WILDFLY_*_PASSWORD` are stored 
 as aliases in a credential store. Other environment variables of the form `WILDFLY_*` are written
@@ -56,8 +56,8 @@ dynamically configuring the container at startup.
 When generating alias or property names from environment variables, the `WILDFLY_` prefix is stripped
 and the name is converted to lower case. For aliases, underscores are replaced with dashes,
 whereas for properties underscores are replaced with periods. For example:
-- `WILDFLY_DATASOURCE_ORACLE_USERNAME` results in property `datasource.oracle.username`
-- `WILDFLY_DATASOURCE_ORACLE_PASSWORD` results in alias `datasource-oracle-password`
+- `WILDFLY_DATASOURCE_USERNAME` results in property `datasource.username`
+- `WILDFLY_DATASOURCE_PASSWORD` results in alias `datasource-password`
 
 ## Ports
 
@@ -91,7 +91,7 @@ environment variable:
 
 ## TLS certificate
 
-A self-signed certificate is stored in `/opt/security/keystore.jks`.
+A self-signed certificate is stored in `$JBOSS_HOME/standalone/configuration/security/keystore.jks`.
 For production, replace the certificate with a proper certificate from a bind mount.
 
 ## Admin user
@@ -109,23 +109,44 @@ master password. The master password is read from `/run/secrets/master-password`
 For production, the master password can be overridden with a password stored in
 an in-memory file system (e.g. Docker secret).
 
-# Databases
+# Extending the base image
+
+The base image can be extended by running shell of CLI scripts during build or startup. 
+Startup shell of CLI scripts can be added to `$JBOSS_HOME/startup`. Defaults for additional
+environment variables can be added to `$JBOSS_HOME/bin/environment.sh`.
+See [docker-wildlfy-oracle](docker-wildfly-oracle) for an example.
 
 ## Oracle RDBMS
 
-Download `ojdbc8.jar` from
-[https://www.oracle.com/technetwork/database/application-development/jdbc/downloads/jdbc-ucp-183-5013470.html](https://www.oracle.com/technetwork/database/application-development/jdbc/downloads/jdbc-ucp-183-5013470.html)
+The [docker-wildlfy-oracle](docker-wildfly-oracle) extends the Wildfly base image with an Oracle
+JDBC driver and datasource. The datasource can be configured via environment variables. 
+
+To build the image, download `ojdbc8.jar` from
+[https://www.oracle.com/technetwork/database/features/jdbc/jdbc-ucp-122-3110062.html](https://www.oracle.com/technetwork/database/features/jdbc/jdbc-ucp-122-3110062.html)
 to [`docker-wildfly-oracle`](docker-wildfly-oracle). Then run:
 
     make wildfly-oracle.build
     
-Environment variables for configuring the datasource:
+Environment variables for configuring the datasource are:
 
-- `WILDFLY_DATASOURCE_ORACLE_URL`: connection URL
-- `WILDFLY_DATASOURCE_ORACLE_USERNAME`: user name
-- `WILDFLY_DATASOURCE_ORACLE_PASSWORD`: password
+- `WILDFLY_ORACLE_DATASOURCE_URL`: connection URL
+- `WILDFLY_ORACLE_DATASOURCE_JNDINAME`: JDNI name for the datasource
+- `WILDFLY_ORACLE_DATASOURCE_USERNAME`: user name
+- `WILDFLY_ORACLE_DATASOURCE_PASSWORD`: password
 
-See [oracle.cli](docker-wildfly-oracle/cli/oracle.cli) for defaults.
+See [environment.sh](docker-wildfly-oracle/environment.sh) for defaults.
+
+## Docker-compose example
+
+See [docker-compose](docker-compose) for an example setup of Wildfly with an Oracle database.
+1. First create an Oracle database image (see [docker-oracle](https://github.com/casparderksen/docker-oracle)
+2. Build the Wildfly Oracle image: `make wildfly-oracle.build`
+3. Go to the [docker-compose](docker-compose) directory
+4. Start the database: `docker-compose up -d oracledb`
+5. Wait for the database to start: `docker logs -f <container-id>`
+6. Start the Wildlfy imaage: `docker-compose up -d  wildfly-oracle`
+7. Go to the management console at [https://localhost:9993/](https://localhost:9993/), login with `admin:changeit`
+   and test the datasource connection.
 
 # References
 
