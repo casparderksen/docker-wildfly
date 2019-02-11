@@ -25,7 +25,7 @@ RUN sed -ie 's/%d{HH/%d{yyyy-MM-dd HH/' $JBOSS_HOME/standalone/configuration/log
     && touch $JBOSS_HOME/standalone/configuration/wildfly.properties \
     && mkdir -m 700 /run/secrets \
     && chown -R jboss:jboss /run/secrets \
-    && cat /dev/urandom | tr -cd '[:print:]' | head -c 32 > /run/secrets/master-password \
+    && cat /dev/urandom | tr -cd '[:alnum:]' | head -c 32 > /run/secrets/master-password \
     && mkdir -m 700 $JBOSS_HOME/standalone/configuration/security \
     && keytool -genkeypair \
            -keyalg RSA \

@@ -6,7 +6,7 @@ WILDFLY_CS_FILE=${JBOSS_HOME}/standalone/configuration/security/wildfly.jceks
 
 # Read master password and generate random credential store password
 MASTER_CS_PASSWORD=$(cat /run/secrets/master-password)
-WILDFLY_CS_PASSWORD=$(cat /dev/urandom | tr -cd '[:print:]' | head -c 32)
+WILDFLY_CS_PASSWORD=$(cat /dev/urandom | tr -cd '[:alnum:]' | head -c 32)
 
 # Functions for managing credential stores with Elytron Tool
 
