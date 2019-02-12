@@ -24,6 +24,14 @@ batch
     user-name="${oracle.datasource.username}", \
     credential-reference={store=WildflyCS, alias=oracle-datasource-password})
 
+# Set default datasource
+/subsystem=ee/service=default-bindings:write-attribute(name=datasource, value="${oracle.datasource.jndiname}")
+
+# Remove H2 driver and example datasource
+/subsystem=datasources/data-source=ExampleDS:remove
+/subsystem=datasources/jdbc-driver=h2:remove
+
+
 # Enable statistics
 # TODO test
 

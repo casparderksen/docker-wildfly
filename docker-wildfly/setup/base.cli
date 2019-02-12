@@ -44,11 +44,9 @@ batch
 /subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
 /subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
 
-# Disable JMX remoting, repeated deployment scanning and example datasource
+# Disable JMX remoting and repeated deployment scanning
 /subsystem=jmx/remoting-connector=jmx:remove
 /subsystem=deployment-scanner/scanner=default:write-attribute(name=scan-interval, value=-1)
-/subsystem=datasources/data-source=ExampleDS:remove
-/subsystem=datasources/jdbc-driver=h2:remove
 
 # Enable statistics
 
