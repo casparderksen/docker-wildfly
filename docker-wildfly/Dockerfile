@@ -1,5 +1,10 @@
 FROM caspard/openjdk8 as base
 
+# Install wait-for and netcat
+RUN curl -s https://raw.githubusercontent.com/eficode/wait-for/master/wait-for > /usr/local/bin/wait-for \
+    && chmod +x /usr/local/bin/wait-for \
+    && yum install -y nc
+
 # Create JBoss user and group used to launch processes
 RUN groupadd -r jboss -g 1000 \
     && useradd -u 1000 -r -g jboss -m -d /opt/jboss -s /sbin/nologin -c "JBoss user" jboss \

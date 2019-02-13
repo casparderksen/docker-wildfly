@@ -14,6 +14,8 @@ services:
 
   wildfly-oracle:
     image: caspard/wildfly-oracle
+    depends_on:
+      - oracledb
     ports:
       - "8443:8443"
       - "9993:9993"

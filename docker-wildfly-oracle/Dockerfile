@@ -23,6 +23,9 @@ RUN cat /tmp/environment.sh >> $JBOSS_HOME/bin/environment.sh
 
 FROM base
 
+# Add startup scripts
+COPY --chown=jboss:jboss startup $JBOSS_HOME/startup
+
 # Copy configuration files from builder
 COPY --chown=jboss:jboss --from=builder $JBOSS_HOME/standalone/configuration/standalone.xml $JBOSS_HOME/standalone/configuration
 COPY --chown=jboss:jboss --from=builder $JBOSS_HOME/bin/environment.sh $JBOSS_HOME/bin
