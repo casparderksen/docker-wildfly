@@ -27,7 +27,7 @@ batch
 
 /subsystem=undertow/server=default-server/https-listener=https:undefine-attribute(name=security-realm)
 /subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=ssl-context, value=httpsSSC)
-/subsystem=undertow/server=default-server/http-listener=default:remove
+#/subsystem=undertow/server=default-server/http-listener=default:remove
 /subsystem=undertow/server=default-server/host=default-host/location=\/:remove
 /subsystem=undertow/configuration=handler/file=welcome-content:remove
 
