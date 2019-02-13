@@ -48,6 +48,10 @@ batch
 /subsystem=jmx/remoting-connector=jmx:remove
 /subsystem=deployment-scanner/scanner=default:write-attribute(name=scan-interval, value=-1)
 
+# Enable property replacement in JEE config files
+/subsystem=ee:write-attribute(name=jboss-descriptor-property-replacement, value=true)
+/subsystem=ee:write-attribute(name=spec-descriptor-property-replacement, value=true)
+
 # Enable statistics
 
 /subsystem=transactions:write-attribute(name=statistics-enabled, value=true)
