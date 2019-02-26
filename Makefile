@@ -12,7 +12,7 @@ $(TARGETS:=.build): %.build: docker-%
 	-docker build -t $(REPO)/$* $<
 
 wildfly.build: openjdk8.build
-wildfly-oracle.build: wildfly.build docker-wildfly-oracle/ojdbc8.jar
+wildfly-oracle.build: wildfly.build docker-wildfly-oracle/modules/com/oracle/jdbc/main/ojdbc8.jar
 
 .PHONY: run
 run: wildfly.run

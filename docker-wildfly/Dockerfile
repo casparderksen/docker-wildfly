@@ -22,15 +22,17 @@ RUN curl -s -O https://download.jboss.org/wildfly/$WILDFLY_VERSION/wildfly-$WILD
     && mv wildfly-$WILDFLY_VERSION $JBOSS_HOME \
     && rm wildfly-$WILDFLY_VERSION.tar.gz
 
-# Add config script
-COPY bin/run-config-scripts.sh $JBOSS_HOME/bin
+# Copy startup script
+COPY bin/environment.sh bin/run-config-scripts.sh $JBOSS_HOME/bin/
+COPY bin/entrypoint.sh /usr/local/bin
+COPY startup $JBOSS_HOME/startup
 
-# Configure logging, system properties, master-password, and TLS certificate
+# Configure logging, system properties, master password and TLS certificate
 RUN sed -ie 's/%d{HH/%d{yyyy-MM-dd HH/' $JBOSS_HOME/standalone/configuration/logging.properties \
     && touch $JBOSS_HOME/standalone/configuration/wildfly.properties \
     && mkdir -m 700 /run/secrets \
-    && chown -R jboss:jboss /run/secrets \
     && cat /dev/urandom | tr -cd '[:alnum:]' | head -c 32 > /run/secrets/master-password \
+    && chown -R jboss:jboss /run/secrets \
     && mkdir -m 700 $JBOSS_HOME/standalone/configuration/security \
     && keytool -genkeypair \
            -keyalg RSA \
@@ -65,11 +67,6 @@ FROM base
 # Copy configuration file from builder (credentials stores are generated at startup)
 COPY --chown=jboss:jboss --from=builder $JBOSS_HOME/standalone/configuration/standalone.xml $JBOSS_HOME/standalone/configuration
 
-# Add startup scripts
-COPY --chown=jboss:jboss bin/environment.sh $JBOSS_HOME/bin
-COPY --chown=jboss:jboss startup $JBOSS_HOME/startup
-COPY bin/wildfly-wrapper.sh /usr/local/bin
-
 # Switch to restricted user
 USER jboss
 
@@ -79,5 +76,6 @@ WORKDIR /opt/jboss
 # Expose debug/HTTPS/management ports
 EXPOSE 5005 8443 9993
 
-# Wrapper script runs startup scripts and starts the server
-CMD ["/usr/local/bin/wildfly-wrapper.sh"]
+# Entrypoint script runs startup scripts and starts Wildfly
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["wildfly"]

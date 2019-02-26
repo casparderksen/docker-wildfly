@@ -12,7 +12,7 @@ if [[ -z "${SCRIPTS_DIR}" ]]; then
 fi;
 
 if [[ ! -d "${SCRIPTS_DIR}" ]]; then
-   echo "$0: scripts directory expected as argument";
+   echo "$(basename $0): scripts directory expected as argument";
    exit 1;
 fi;
 

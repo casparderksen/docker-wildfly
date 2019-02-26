@@ -1,7 +1,7 @@
 FROM caspard/wildfly as base
 
 # Add Oracle driver module
-COPY --chown=jboss:jboss module.xml ojdbc8.jar $JBOSS_HOME/modules/system/layers/base/com/oracle/jdbc/main/
+COPY --chown=jboss:jboss modules $JBOSS_HOME/modules
 
 ##############################
 ### Generate configuration ###
@@ -14,7 +14,7 @@ COPY setup $JBOSS_HOME/setup
 RUN $JBOSS_HOME/bin/run-config-scripts.sh $JBOSS_HOME/setup
 
 # Extend environment parameters
-COPY environment.sh /tmp
+COPY bin/environment.sh /tmp
 RUN cat /tmp/environment.sh >> $JBOSS_HOME/bin/environment.sh
 
 ############################

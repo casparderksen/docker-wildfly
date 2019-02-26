@@ -123,7 +123,8 @@ JDBC driver and datasource. The datasource can be configured via environment var
 
 To build the image, download `ojdbc8.jar` from
 [https://www.oracle.com/technetwork/database/features/jdbc/jdbc-ucp-122-3110062.html](https://www.oracle.com/technetwork/database/features/jdbc/jdbc-ucp-122-3110062.html)
-to [`docker-wildfly-oracle`](docker-wildfly-oracle). Then run:
+to [`docker-wildfly-oracle/modules/com/oracle/jdbc/main/ojdbc8.jar`](docker-wildfly-oracle/modules/com/oracle/jdbc/main/ojdbc8.jar).
+Then run:
 
     make wildfly-oracle.build
     
