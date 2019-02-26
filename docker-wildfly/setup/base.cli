@@ -23,13 +23,14 @@ batch
 /subsystem=elytron/key-manager=httpsKM:add(key-store=httpsKS, algorithm="SunX509", alias-filter=localhost, credential-reference={store=WildflyCS, alias=key-password})
 /subsystem=elytron/server-ssl-context=httpsSSC:add(key-manager=httpsKM, protocols=["TLSv1.2"])
 
-# Enable HTTPS, and remove legacy security realm and welcome content
+# Enable HTTPS, and remove legacy security realm and welcome content, enable Elytron
 
 /subsystem=undertow/server=default-server/https-listener=https:undefine-attribute(name=security-realm)
 /subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=ssl-context, value=httpsSSC)
 #/subsystem=undertow/server=default-server/http-listener=default:remove
 /subsystem=undertow/server=default-server/host=default-host/location=\/:remove
 /subsystem=undertow/configuration=handler/file=welcome-content:remove
+/subsystem=undertow/application-security-domain=other:add(security-domain=ApplicationDomain)
 
 # Enable HTTPS and authentication for management interface and remove legacy security realm
 
