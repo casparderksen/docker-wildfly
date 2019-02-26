@@ -1,4 +1,4 @@
-#!/bin/sh -u
+#!/bin/sh -eu
 
 
 if [[ ! ${WILDFLY_ORACLE_DATASOURCE_URL} =~ jdbc:oracle:thin:@(//)?(.+):([0-9]+)[:/](.+) ]] ; then
@@ -9,4 +9,4 @@ fi
 host=${BASH_REMATCH[2]}
 port=${BASH_REMATCH[3]}
 
-/usr/local/bin/wait-for ${host}:${port} -- echo "Database is up"
+/usr/local/bin/wait-for ${host}:${port} --timeout=${WILDFLY_WAIT_FOR_ORACLE_TIMEOUT} -- echo "Database is up"
