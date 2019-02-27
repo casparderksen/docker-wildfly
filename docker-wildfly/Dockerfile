@@ -71,7 +71,7 @@ COPY --chown=jboss:jboss --from=builder $JBOSS_HOME/standalone/configuration/sta
 USER jboss
 
 # Set the working directory to jboss' user home directory
-WORKDIR /opt/jboss
+WORKDIR $JBOSS_HOME
 
 # Expose debug/HTTPS/management ports
 EXPOSE 5005 8443 9993
