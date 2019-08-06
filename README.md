@@ -11,17 +11,16 @@ the container orchestrator and not some JEE application server.
 
 For fast startup, Wildfly is configured at build time, with references to dummy
 credentials and a self signed certificate. At run time, credential stores are regenerated
-with actual secrets from the environment. The self-signed certificate can be replaced with 
-a bind mount.
+with actual secrets from the environment. 
 
 # Building the images
 
 A [`Makefile`](Makefile) builds the images and their depencies.
 
 The Wildfly image is built as follows:
-- CentOS-7 with OpenJDK-8 base image
-- Installation of Wildlfy 15
-- Generation of self-signed certificate for development environment
+- Jboss base image (CentOS-7, OpenJDK-8, jboss user)
+- Installation of Wildlfy 17 via Galleon
+- Generatibaon of self-signed certificate for development environment
 - Creation of credential stores with dummy passwords
 - Offline configuration of Wildfly via CLI
 
@@ -39,32 +38,33 @@ Type the following command to run a Wildfly container:
 
 Containers launched from the Wildfly image can be configured with the following environment variables:
 
-- `TIME_ZONE`: passed as `user.timezone` property to Wildfly
-- `JAVA_OPTS`: passed to Wildfy
+- `JAVA_OPTS`: JVM options (memory settings)
+- `JAVA_EXTRA_OPTS`: additional JVM options
+- `WILDFLY_SERVER_OPTS`: Wildfly server properties
 - `WILDFLY_ADMIN_USER`: admin user name
 - `WILDFLY_ADMIN_PASSWORD`: admin user password
 - `WILDFLY_KEYSTORE_PASSWORD`: keystore password for TLS
 - `WILDFLY_KEY_PASSWORD`: key password for TLS
+- `WILDFLY_DEBUG`: if true, enable JVM debugging
+- `WILDFLY_DEBUG_PORT`: JVM debug port
+- `TIME_ZONE`: passed as `user.timezone` property to Wildfly
+- `TX_NODE_ID`: passed as `jboss.tx.node.id` property to Wildfly
 
-See [environment.sh](docker-wildfly/bin/environment.sh) for defaults.
+See [base-env.sh](docker-wildfly/bin/base-env.sh) for defaults.
 
 When running the container, all environment variables of the form `WILDFLY_*_PASSWORD` are stored 
-as aliases in a credential store. Other environment variables of the form `WILDFLY_*` are written
-to a properties files that is passed to Wildfly. In this way, environment variables can be used for
-dynamically configuring the container at startup.
-
-When generating alias or property names from environment variables, the `WILDFLY_` prefix is stripped,
-and the name is converted to lower case. For aliases, underscores are replaced with dashes,
-whereas for properties underscores are replaced with periods. For example:
-- `WILDFLY_DATASOURCE_USERNAME` results in property `datasource.username`
-- `WILDFLY_DATASOURCE_PASSWORD` results in alias `datasource-password`
+as aliases in a credential store. The `WILDFLY_` prefix is stripped, the name is converted to lower case,
+and underscores are replaced with dashes. For example, `WILDFLY_DATASOURCE_PASSWORD` results in 
+alias `datasource-password`.
 
 ## Ports
 
 The following ports are exposed:
 - 5005: for remote debugging
+- 8080: HTTP port
 - 8443: HTTPS port
-- 9993: Management port (remote+https)
+- 9990: management port (redirected to secure port)
+- 9993: secure management port (remote+https)
 
 ## Management console
 
@@ -76,23 +76,13 @@ When the container is running, the management console can be accessed at:
 
 Newer versions of Java 8 and higher should respect CPU and memory limits.
 To use all available heap configured from a container orchestrator, specify the following JVM option: `-XX:MaxRAMFraction=1`.
-In order to ensure sufficient entropy, following JVM option is added by default: `-Djava.security.egd=file:/dev/./urandom`.
-
-## Remote debugging
-
-The `JAVA_TOOL_OPTIONS` environment variable can be specified to set Java
-command line options without altering the container image. To enable remote
-debugging in a Docker container, start the container with the following
-environment variable:
-
-    JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
 
 # Security
 
 ## TLS certificate
 
 A self-signed certificate is stored in `$JBOSS_HOME/standalone/configuration/security/keystore.jks`.
-For production, replace the certificate with a proper certificate from a bind mount.
+For production, replace the certificate with a proper certificate.
 
 ## Admin user
 
@@ -103,18 +93,16 @@ generated, rendering the management interface inaccessible.
 ## Secrets
 
 When the container starts, the wrapper script stores passwords in an Elytron
-Credential Store.  The credential store is encrypted with a random password.
-This password is stored in a second credential store that is encrypted with a
-master password. The master password is read from `/run/secrets/master-password`.
-For production, the master password can be overridden with a password stored in
-an in-memory file system (e.g. Docker secret).
+Credential Store.  The credential store is encrypted with a random master password.
 
 # Extending the base image
 
-The base image can be extended by running shell or CLI scripts during build or startup. 
-Shell or CLI scripts that are added to `$JBOSS_HOME/startup` are executed when the container starts
-before starting Wildfly. Default values for additional environment variables can be added 
-to `$JBOSS_HOME/bin/environment.sh`. See [docker-wildlfy-oracle](docker-wildfly-oracle) for an example.
+The base image can be extended by adding shell or CLI scripts that are ran during build or startup:
+- Scripts in `$JBOSS_HOME/setup` are executed when building the image
+- Scripts in `$JBOSS_HOME/environment` are sourced before running the startup scripts
+- Scripts in `$JBOSS_HOME/startuo` are executed and before starting Wildlfy
+
+See [docker-wildlfy-oracle](docker-wildfly-oracle) for an example.
 
 ## Oracle RDBMS
 
@@ -135,7 +123,7 @@ Environment variables for configuring the datasource are:
 - `WILDFLY_ORACLE_DATASOURCE_USERNAME`: user name
 - `WILDFLY_ORACLE_DATASOURCE_PASSWORD`: password
 
-See [environment.sh](docker-wildfly-oracle/environment.sh) for defaults.
+See [oracle-env.sh](docker-wildfly-oracle/oracle-env.sh) for defaults.
 
 ## Docker-compose example
 
