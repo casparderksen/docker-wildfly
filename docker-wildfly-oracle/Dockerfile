@@ -1,31 +1,27 @@
-FROM caspard/wildfly as base
+FROM caspard/wildfly
+
+# Install wait-for and netcat utilities (used by wait-for-oracle startup script)
+USER root
+RUN curl -s https://raw.githubusercontent.com/eficode/wait-for/master/wait-for > /usr/local/bin/wait-for \
+    && chmod +x /usr/local/bin/wait-for \
+    && yum install -y nc
+USER jboss
 
 # Add Oracle driver module
-COPY --chown=jboss:jboss modules $JBOSS_HOME/modules
+COPY modules $JBOSS_HOME/modules
 
-##############################
-### Generate configuration ###
-##############################
+# Copy environment settings
+COPY environment ${JBOSS_HOME}/environment
 
-FROM base as builder
+# Copy setup scripts
+COPY setup ${JBOSS_HOME}/setup
 
-# Run setup scripts
-COPY setup $JBOSS_HOME/setup
-RUN $JBOSS_HOME/bin/run-config-scripts.sh $JBOSS_HOME/setup
+# Copy startup scripts
+COPY startup ${JBOSS_HOME}/startup
 
-# Extend environment parameters
-COPY bin/environment.sh /tmp
-RUN cat /tmp/environment.sh >> $JBOSS_HOME/bin/environment.sh
-
-############################
-### Generate final image ###
-############################
-
-FROM base
-
-# Add startup scripts
-COPY --chown=jboss:jboss startup $JBOSS_HOME/startup
-
-# Copy configuration files from builder
-COPY --chown=jboss:jboss --from=builder $JBOSS_HOME/standalone/configuration/standalone.xml $JBOSS_HOME/standalone/configuration
-COPY --chown=jboss:jboss --from=builder $JBOSS_HOME/bin/environment.sh $JBOSS_HOME/bin
+# Run setup scripts and cleanup config
+RUN ${JBOSS_HOME}/bin/run-config-scripts.sh ${JBOSS_HOME}/setup/oracle-ds.cli \
+    && rm -r ${JBOSS_HOME}/standalone/data \
+    && rm -r ${JBOSS_HOME}/standalone/log \
+    && rm -r ${JBOSS_HOME}/standalone/tmp/vfs \
+    && rm -r ${JBOSS_HOME}/standalone/configuration/standalone_xml_history

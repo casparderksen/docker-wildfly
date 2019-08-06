@@ -1,31 +1,21 @@
 #!/bin/sh -eu
 
-# Define file system locations (must be same values as in base.cli)
-MASTER_CS_FILE=${JBOSS_HOME}/standalone/configuration/security/master.jceks
-WILDFLY_CS_FILE=${JBOSS_HOME}/standalone/configuration/security/wildfly.jceks
+# Define file system locations (same as in base.cli)
+SECRETS_DIR=${JBOSS_HOME}/standalone/configuration/security
+CREDENTIAL_STORE=${SECRETS_DIR}/secrets.jceks
 
-# Read master password and generate random credential store password
-MASTER_CS_PASSWORD=$(cat /run/secrets/master-password)
-WILDFLY_CS_PASSWORD=$(cat /dev/urandom | tr -cd '[:alnum:]' | head -c 32)
-
-# Functions for managing credential stores with Elytron Tool
-
-function master_credential_store() {
-    ${JBOSS_HOME}/bin/elytron-tool.sh credential-store --location "${MASTER_CS_FILE}" --password "${MASTER_CS_PASSWORD}" $*
-}
-
+# Helper function for managing credential stores with Elytron Tool
 function wildlfy_credential_store() {
-    ${JBOSS_HOME}/bin/elytron-tool.sh credential-store --location "${WILDFLY_CS_FILE}" --password "${WILDFLY_CS_PASSWORD}" $*
+    ${JBOSS_HOME}/bin/elytron-tool.sh credential-store \
+        --location "${CREDENTIAL_STORE}" \
+        --password "${WILDFLY_MASTER_PASSWORD}" $*
 }
 
-# Store Wildfly credential store password in master credential store
-master_credential_store --create
-master_credential_store --add wildfly-cs-password --secret "${WILDFLY_CS_PASSWORD}"
-
-# Store passwords from environment in credential store
+# Create credential store
 wildlfy_credential_store --create
 
-printenv | while read line; do
+# Store passwords from environment in credential store
+printenv | grep -v WILDFLY_MASTER_PASSWORD | while read line; do
     if [[ ${line} =~ WILDFLY_(.*_PASSWORD)=(.*) ]]; then
         key=${BASH_REMATCH[1]}
         value=${BASH_REMATCH[2]}

@@ -2,7 +2,7 @@
 
 
 if [[ ! ${WILDFLY_ORACLE_DATASOURCE_URL} =~ jdbc:oracle:thin:@(//)?(.+):([0-9]+)[:/](.+) ]] ; then
-    echo "Unexpected datasource URL \"${WILDFLY_ORACLE_DATASOURCE_URL}\""
+    echo "Invalid datasource URL: \"${WILDFLY_ORACLE_DATASOURCE_URL}\""
     exit 1
 fi
 

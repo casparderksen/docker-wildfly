@@ -1,65 +1,40 @@
 # Embed offline server and start batch
-
 embed-server
 batch
 
+# TOO secrets.jceks and keystore.jks as property
+
 # Configure paths
-
 /path=secrets.dir:add(path=security, relative-to=jboss.server.config.dir)
-/path=certificates.dir:add(path=security, relative-to=jboss.server.config.dir)
+/path=keystore.dir:add(path=security, relative-to=jboss.server.config.dir)
 
-# Create credential stores with dummy passwords
-
-/subsystem=elytron/credential-store=MasterCS:add(location="master.jceks", relative-to=secrets.dir, credential-reference={clear-text="{EXT}cat /run/secrets/master-password", type="COMMAND"}, create=true)
-/subsystem=elytron/credential-store=MasterCS:add-alias(alias=wildfly-cs-password, secret-value="changeit")
-
-/subsystem=elytron/credential-store=WildflyCS:add(location="wildfly.jceks", relative-to=secrets.dir, credential-reference={store=MasterCS, alias=wildfly-cs-password}, create=true)
+# Create credential stores with dummy passwords (real passwords are stored at startup)
+/subsystem=elytron/credential-store=WildflyCS:add(location="secrets.jceks", relative-to=secrets.dir, credential-reference={clear-text="${env.WILDFLY_MASTER_PASSWORD:changeit}"}, create=true)
 /subsystem=elytron/credential-store=WildflyCS:add-alias(alias=keystore-password, secret-value="changeit")
 /subsystem=elytron/credential-store=WildflyCS:add-alias(alias=key-password, secret-value="changeit")
 
-# Configure keystore, key manager and SSL context
-
-/subsystem=elytron/key-store=httpsKS:add(type=JKS, path=keystore.jks, relative-to=certificates.dir, credential-reference={store=WildflyCS, alias=keystore-password})
+# Configure keystore, key manager and SSL context (change TLS certificate at startup)
+/subsystem=elytron/key-store=httpsKS:add(type=JKS, path=keystore.jks, relative-to=keystore.dir, credential-reference={store=WildflyCS, alias=keystore-password})
 /subsystem=elytron/key-manager=httpsKM:add(key-store=httpsKS, algorithm="SunX509", alias-filter=localhost, credential-reference={store=WildflyCS, alias=key-password})
 /subsystem=elytron/server-ssl-context=httpsSSC:add(key-manager=httpsKM, protocols=["TLSv1.2"])
 
-# Enable HTTPS, and remove legacy security realm and welcome content, enable Elytron
+# Enable HTTPS
+/subsystem=undertow/server=default-server/https-listener=https:add(socket-binding=https, ssl-context=httpsSSC)
 
-/subsystem=undertow/server=default-server/https-listener=https:undefine-attribute(name=security-realm)
-/subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=ssl-context, value=httpsSSC)
-#/subsystem=undertow/server=default-server/http-listener=default:remove
-/subsystem=undertow/server=default-server/host=default-host/location=\/:remove
-/subsystem=undertow/configuration=handler/file=welcome-content:remove
-/subsystem=undertow/application-security-domain=other:add(security-domain=ApplicationDomain)
-
-# Enable HTTPS and authentication for management interface and remove legacy security realm
-
+# Enable HTTPS and authentication for management interface
 /core-service=management/management-interface=http-interface:write-attribute(name=secure-socket-binding, value=management-https)
 /core-service=management/management-interface=http-interface:write-attribute(name=ssl-context, value=httpsSSC)
-/core-service=management/management-interface=http-interface:undefine-attribute(name=socket-binding)
-#/core-service=management/management-interface=http-interface:write-attribute(name=console-enabled, value=false)
 
-# Secure EJBs with Elytron
+# Enable Elytron security domain
+/subsystem=undertow/application-security-domain=other:add(security-domain=ApplicationDomain)
 
-/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
-/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
-/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
-
-# Disable JMX remoting and repeated deployment scanning
-/subsystem=jmx/remoting-connector=jmx:remove
+# Disable repeated deployment scanning
 /subsystem=deployment-scanner/scanner=default:write-attribute(name=scan-interval, value=-1)
 
 # Enable property replacement in JEE config files
 /subsystem=ee:write-attribute(name=jboss-descriptor-property-replacement, value=true)
 /subsystem=ee:write-attribute(name=spec-descriptor-property-replacement, value=true)
 
-# Enable statistics
-
-/subsystem=transactions:write-attribute(name=statistics-enabled, value=true)
-/subsystem=undertow:write-attribute(name=statistics-enabled, value=true)
-/subsystem=webservices:write-attribute(name=statistics-enabled, value=true)
-
 # Run batch and stop embedded server
-
 run-batch
 stop-embedded-server

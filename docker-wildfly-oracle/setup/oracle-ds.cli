@@ -4,7 +4,6 @@ embed-server
 batch
 
 # Create driver
-
 /subsystem=datasources/jdbc-driver=oracle:add( \
     driver-module-name=com.oracle.jdbc, \
     driver-name=oracle, \
@@ -12,34 +11,17 @@ batch
     driver-xa-datasource-class-name=oracle.jdbc.xa.client.OracleXADataSource)
 
 # Create datasource
-
 /subsystem=datasources/data-source=OracleDS:add( \
-    jndi-name="${oracle.datasource.jndiname}", \
-    connection-url="${oracle.datasource.url}", \
+    jndi-name="${env.WILDFLY_ORACLE_DATASOURCE_JNDINAME}", \
+    connection-url="${env.ORACLE_DATASOURCE_URL}", \
     driver-name=oracle, \
     min-pool-size=5, max-pool-size=10, \
     valid-connection-checker-class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleValidConnectionChecker", \
     stale-connection-checker-class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleStaleConnectionChecker", \
     exception-sorter-class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleExceptionSorter", \
-    user-name="${oracle.datasource.username}", \
+    user-name="${env.WILDFLY_ORACLE_DATASOURCE_USERNAME}", \
     credential-reference={store=WildflyCS, alias=oracle-datasource-password})
 
-# Set default datasource
-/subsystem=ee/service=default-bindings:write-attribute(name=datasource, value="${oracle.datasource.jndiname}")
-
-# Remove H2 driver and example datasource
-/subsystem=datasources/data-source=ExampleDS:remove
-/subsystem=datasources/jdbc-driver=h2:remove
-
-
-# Enable statistics
-# TODO test
-
-#/subsystem=datasources/data-source=OracleDS:write-attribute(name=statistics-enabled, value=true)
-#/subsystem=datasources/data-source=OracleDS/statistics=pool:write-attribute(name=statistics-enabled, value=true)
-#/subsystem=datasources/data-source=OracleDS/statistics=jdbc:write-attribute(name=statistics-enabled, value=true)
-
 # Run batch and stop embedded server
-
 run-batch
 stop-embedded-server

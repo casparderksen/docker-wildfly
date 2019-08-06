@@ -1,13 +1,13 @@
 # About
 
-This projects packages and configures Wildfly 15 in a Docker image.  The goal
+This projects packages and configures Wildfly in a Docker image.  The goal
 of this project is to run JEE8/MicroProfile based microservices in containers
 that are secure by default and respect [Twelve-Factor App](http://12factor.net) principles.
 When the container starts, it must be fully configured without baking secrets 
 into the image.
 
 Wildfly is configured in standalone mode, since clustering should be managed from
-the container orchestrator and not some JEE domain.
+the container orchestrator and not some JEE application server.
 
 For fast startup, Wildfly is configured at build time, with references to dummy
 credentials and a self signed certificate. At run time, credential stores are regenerated
