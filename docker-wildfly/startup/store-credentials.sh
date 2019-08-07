@@ -4,6 +4,9 @@
 SECRETS_DIR=${JBOSS_HOME}/standalone/configuration/security
 CREDENTIAL_STORE=${SECRETS_DIR}/secrets.jceks
 
+# Cleanup file left from previous container start (if any)
+rm -f ${CREDENTIAL_STORE}
+
 # Helper function for managing credential stores with Elytron Tool
 function wildlfy_credential_store() {
     ${JBOSS_HOME}/bin/elytron-tool.sh credential-store \
