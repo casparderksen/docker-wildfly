@@ -21,7 +21,7 @@ COPY startup ${JBOSS_HOME}/startup
 
 # Run setup scripts and cleanup config
 RUN ${JBOSS_HOME}/bin/run-config-scripts.sh ${JBOSS_HOME}/setup/oracle-ds.cli \
-    && rm -r ${JBOSS_HOME}/standalone/data \
-    && rm -r ${JBOSS_HOME}/standalone/log \
+    && rm -r ${JBOSS_HOME}/standalone/{data,log} \
     && rm -r ${JBOSS_HOME}/standalone/tmp/vfs \
-    && rm -r ${JBOSS_HOME}/standalone/configuration/standalone_xml_history
+    && rm -r ${JBOSS_HOME}/standalone/configuration/standalone_xml_history \
+    && rm -r ${JBOSS_HOME}/standalone/configuration/security

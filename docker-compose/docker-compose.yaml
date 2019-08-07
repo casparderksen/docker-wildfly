@@ -17,13 +17,15 @@ services:
     depends_on:
       - oracledb
     ports:
+      - "8080:8080"
       - "8443:8443"
+      - "9990:9990"
       - "9993:9993"
     environment:
       - WILDFLY_ADMIN_PASSWORD=changeit
-      - WILDFLY_ORACLE_DATASOURCE_URL=jdbc:oracle:thin:@//oracledb:1521/ORCLPDB1
-      - WILDFLY_ORACLE_DATASOURCE_USERNAME=myschema
-      - WILDFLY_ORACLE_DATASOURCE_PASSWORD=myschema
+      - WILDFLY_DATASOURCE_URL=jdbc:oracle:thin:@//oracledb:1521/ORCLPDB1
+      - WILDFLY_DATASOURCE_USERNAME=myschema
+      - WILDFLY_DATASOURCE_PASSWORD=myschema
 
 volumes:
   oradata:

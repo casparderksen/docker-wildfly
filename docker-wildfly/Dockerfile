@@ -31,8 +31,7 @@ RUN ${JBOSS_HOME}/bin/run-config-scripts.sh ${JBOSS_HOME}/setup \
     && rm -r ${JBOSS_HOME}/standalone/{data,log} \
     && rm -r ${JBOSS_HOME}/standalone/tmp/* \
     && rm -r ${JBOSS_HOME}/standalone/configuration/standalone_xml_history \
-    && rm ${JBOSS_HOME}/standalone/configuration/security/* \
-    && chmod 750 ${JBOSS_HOME}/standalone/configuration/security
+    && rm -r ${JBOSS_HOME}/standalone/configuration/security
 
 ############################
 ### Generate final image ###

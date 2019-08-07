@@ -53,9 +53,9 @@ Containers launched from the Wildfly image can be configured with the following 
 See [base-env.sh](docker-wildfly/bin/base-env.sh) for defaults.
 
 When running the container, all environment variables of the form `WILDFLY_*_PASSWORD` are stored 
-as aliases in a credential store. The `WILDFLY_` prefix is stripped, the name is converted to lower case,
+as aliases in an Elytron credential store. The `WILDFLY_` prefix is stripped, the name is converted to lower case,
 and underscores are replaced with dashes. For example, `WILDFLY_DATASOURCE_PASSWORD` results in 
-alias `datasource-password`.
+alias `datasource-password`. 
 
 ## Ports
 
@@ -118,10 +118,10 @@ Then run:
     
 Environment variables for configuring the datasource are:
 
-- `WILDFLY_ORACLE_DATASOURCE_URL`: connection URL
-- `WILDFLY_ORACLE_DATASOURCE_JNDINAME`: JDNI name for the datasource
-- `WILDFLY_ORACLE_DATASOURCE_USERNAME`: user name
-- `WILDFLY_ORACLE_DATASOURCE_PASSWORD`: password
+- `WILDFLY_DATASOURCE_URL`: connection URL
+- `WILDFLY_DATASOURCE_JNDINAME`: JDNI name for the datasource
+- `WILDFLY_DATASOURCE_USERNAME`: user name
+- `WILDFLY_DATASOURCE_PASSWORD`: password
 
 See [oracle-env.sh](docker-wildfly-oracle/oracle-env.sh) for defaults.
 
@@ -140,7 +140,8 @@ See [docker-compose](docker-compose) for an example setup of Wildfly with an Ora
 # References
 
 Wildfly:
-- [Wildfly 15 documentation](http://docs.wildfly.org/15/)
+- [Wildfly documentation](http://docs.wildfly.org)
+- [Galleon documentation](https://docs.wildfly.org/galleon/)
 - [WildFly quickstarts](https://github.com/wildfly/quickstart)
 - [JBoss EAP documentation](https://access.redhat.com/documentation/en-us/red_hat_jboss_enterprise_application_platform/7.1/)
 

@@ -1,8 +1,8 @@
 #!/bin/sh -eu
 
 
-if [[ ! ${WILDFLY_ORACLE_DATASOURCE_URL} =~ jdbc:oracle:thin:@(//)?(.+):([0-9]+)[:/](.+) ]] ; then
-    echo "Invalid datasource URL: \"${WILDFLY_ORACLE_DATASOURCE_URL}\""
+if [[ ! ${WILDFLY_DATASOURCE_URL} =~ jdbc:oracle:thin:@(//)?(.+):([0-9]+)[:/](.+) ]] ; then
+    echo "Invalid datasource URL: \"${WILDFLY_DATASOURCE_URL}\""
     exit 1
 fi
 
