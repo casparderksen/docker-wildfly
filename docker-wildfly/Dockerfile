@@ -13,13 +13,6 @@ RUN galleon.sh install wildfly:current#${WILDFLY_VERSION} --dir=${JBOSS_HOME} --
 # Configure logging
 RUN sed -ie 's/%d{HH/%d{yyyy-MM-dd HH/' ${JBOSS_HOME}/standalone/configuration/logging.properties
 
-# Create a dummy master password (excpected by base.cli for setting up a credential store)
-USER root
-RUN mkdir /run/secrets \
-    && echo changeit > /run/secrets/master-password \
-    && chown -R jboss:jboss /run/secrets
-USER jboss
-
 # Copy environment settings
 COPY environment ${JBOSS_HOME}/environment
 
@@ -58,12 +51,6 @@ WORKDIR ${JBOSS_HOME}
 
 # Expose debug/http/management ports
 EXPOSE 5005 8080 8443 9990 9993
-
-# Create directory for master password file (generated at startup)
-USER root
-RUN mkdir /run/secrets \
-    && chmod 750 /run/secrets \
-    && chown -R jboss:jboss /run/secrets
 
 # Create entrypoint
 COPY bin/entrypoint.sh /usr/local/bin
