@@ -143,7 +143,7 @@ Wildfly:
 - [Wildfly documentation](http://docs.wildfly.org)
 - [Galleon documentation](https://docs.wildfly.org/galleon/)
 - [WildFly quickstarts](https://github.com/wildfly/quickstart)
-- [Elytron blog](http://undertheelytron.blogspot.com)
+- [Elytron blog ](http://undertheelytron.blogspot.com)
 - [JBoss EAP documentation](https://access.redhat.com/documentation/en-us/red_hat_jboss_enterprise_application_platform/7.1/)
 
 Oracle RDBMS in Docker:
